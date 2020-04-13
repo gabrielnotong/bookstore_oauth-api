@@ -1,2 +1,2 @@
-# boostore_auth-api
-Auth API
+# boostore_oauth-api
+Oauth API
