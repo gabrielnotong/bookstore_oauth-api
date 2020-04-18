@@ -8,3 +8,9 @@
 
 - Creating ou projects: OAuth API
 > 20, 21, 22, 23
+
+### Tests
+
+We can use this library: 
+
+> go get github.com/stretchr/testify 
