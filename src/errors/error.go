@@ -2,6 +2,7 @@ package errors
 
 import (
 	"fmt"
+	"github.com/gocql/gocql"
 	"github.com/lib/pq"
 	"net/http"
 	"strings"
@@ -58,6 +59,29 @@ func ParsePostgresError(err error) *RestErr {
 			fmt.Sprintf("Error when saving: %s value already in use", pgErr.Constraint),
 		)
 	}
+
+	return NewInternalServerError(
+		fmt.Sprintf("Error processing request: %s", err.Error()),
+	)
+}
+
+func ParseCassandraError(err error) *RestErr {
+	_, ok := err.(*gocql.Error) // error converted into postgres error
+	if !ok {
+		if err == gocql.ErrNotFound {
+			return NewNotFoundError("No record matching the given id")
+		}
+		return NewInternalServerError(
+			fmt.Sprintf("Error when parsing database: %s", err.Error()),
+		)
+	}
+
+	//switch cqlErr.Code {
+	//case "23505":
+	//	return NewInternalServerError(
+	//		fmt.Sprintf("Error when saving: %s value already in use", pgErr.Constraint),
+	//	)
+	//}
 
 	return NewInternalServerError(
 		fmt.Sprintf("Error processing request: %s", err.Error()),

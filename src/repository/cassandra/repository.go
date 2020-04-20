@@ -3,20 +3,41 @@ package db
 import (
 	"github.com/gabrielnotong/bookstore_oauth-api/src/domain/access_token"
 	"github.com/gabrielnotong/bookstore_oauth-api/src/errors"
+	"github.com/gocql/gocql"
+)
+
+const (
+	queryGetAccessToken = "SELECT id, user_id, client_id, expires FROM access_token WHERE id = ?"
+	queryCreateAccessToken = "INSERT INTO access_token(id, user_id, client_id, expires) VALUES (?,?,?,?)"
 )
 
 type DBRepository interface {
 	GetById(string) (*access_token.AccessToken, *errors.RestErr)
+	Create(access_token.AccessToken) *errors.RestErr
 }
 
 type dbRepository struct {
-	// define cassandra db entry point here
+	session *gocql.Session
 }
 
-func NewDBRepository() DBRepository {
-	return &dbRepository{}
+func NewDBRepository(s *gocql.Session) DBRepository {
+	return &dbRepository{s}
 }
 
 func (db *dbRepository) GetById(tokenId string) (*access_token.AccessToken, *errors.RestErr) {
-	return nil, errors.NewInternalServerError("Database access not yet implemented")
+	q := db.session.Query(queryGetAccessToken, tokenId)
+	at := &access_token.AccessToken{}
+	err := q.Scan(&at.ID, &at.UserId, &at.ClientId, &at.Expires)
+	if err != nil {
+		return nil, errors.ParseCassandraError(err)
+	}
+	return at, nil
+}
+
+func (db *dbRepository) Create(at access_token.AccessToken) *errors.RestErr {
+	err := db.session.Query(queryCreateAccessToken, at.ID, at.UserId, at.ClientId, at.Expires).Exec()
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
+	}
+	return nil
 }
