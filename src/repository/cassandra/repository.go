@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	queryGetAccessToken = "SELECT id, user_id, client_id, expires FROM access_token WHERE id = ?"
+	queryGetAccessToken    = "SELECT id, user_id, client_id, expires FROM access_token WHERE id = ?"
 	queryCreateAccessToken = "INSERT INTO access_token(id, user_id, client_id, expires) VALUES (?,?,?,?)"
 )
 
@@ -29,7 +29,7 @@ func (db *dbRepository) GetById(tokenId string) (*access_token.AccessToken, *err
 	at := &access_token.AccessToken{}
 	err := q.Scan(&at.ID, &at.UserId, &at.ClientId, &at.Expires)
 	if err != nil {
-		return nil, errors.ParseCassandraError(err)
+		return nil, errors.ParsePostgresError(err)
 	}
 	return at, nil
 }

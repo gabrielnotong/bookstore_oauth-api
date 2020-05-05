@@ -26,6 +26,7 @@ func TestLoginUserTimeoutFromApi(t *testing.T) {
 	repository := NewUsersRepository()
 
 	user, err := repository.Login("email@yopmail.com", "password")
-	assert.Equal(t, nil, user)
+	assert.Nil(t, user)
+	assert.NotNil(t, err)
 	assert.Equal(t, "Invalid rest client response when trying to log user in", err.Message)
 }
